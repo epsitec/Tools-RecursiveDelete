@@ -15,7 +15,7 @@ get errors because the path exceeds 250.
 
 When working with `npm` it is not unusal to get `node_modules` directory
 trees which are very deep, with paths reaching lengths of 400 or more
-characters.
+characters (this is a [known issue](https://github.com/joyent/node/issues/6960)).
 
 Trying to delete these folders with the _Windows Explorer_  results in
 error messages complaining about the fact that the _path is too long_ and
