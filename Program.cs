@@ -40,24 +40,29 @@ namespace RecursiveDelete
 				displayPath = "..." + displayPath.Substring (displayPath.Length-61, 61);
 			}
 
-			if (System.IO.File.Exists (path))
+			if (Program.ExecuteOperation (() => System.IO.File.Exists (path)))
 			{
 				System.Console.WriteLine ("Delete file {0}", displayPath);
-				System.IO.File.Delete (path);
+				
+				Program.DeleteFile (path);
+
 				return;
 			}
 
-			if (System.IO.Directory.Exists (path))
+			if (Program.ExecuteOperation (() => System.IO.Directory.Exists (path)))
 			{
 				var shortPath = Program.ShortenDir (path);
 
 				System.Console.WriteLine ("Analyzing   {0}", displayPath);
 				
-				var entries = System.IO.Directory.GetFileSystemEntries (shortPath);
+				var entries = Program.ExecuteOperation (() => System.IO.Directory.GetFileSystemEntries (shortPath));
 
-				foreach (var entry in entries)
+				if (entries != null)
 				{
-					Program.Delete (entry, System.IO.Path.Combine (fullDisplayPath, System.IO.Path.GetFileName (entry)));
+					foreach (var entry in entries)
+					{
+						Program.Delete (entry, System.IO.Path.Combine (fullDisplayPath, System.IO.Path.GetFileName (entry)));
+					}
 				}
 
 				System.Console.WriteLine ("Delete dir  {0}", displayPath);
@@ -66,18 +71,52 @@ namespace RecursiveDelete
 			}
 		}
 
-		private static void DeleteDir(string newPath)
+		private static void DeleteFile(string path)
+		{
+			Program.ExecuteOperation (() => System.IO.File.Delete (path));
+		}
+		
+		private static void DeleteDir(string path)
+		{
+			Program.ExecuteOperation (() => System.IO.Directory.Delete (path));
+		}
+
+		private static T ExecuteOperation<T>(System.Func<T> operation)
+		{
+			T result = default (T);
+			
+			Program.ExecuteOperation (() =>
+			{
+				result = operation ();
+			});
+
+			return result;
+		}
+
+		private static void ExecuteOperation(System.Action operation)
 		{
 			try
 			{
-				System.IO.Directory.Delete (newPath);
+				operation ();
 			}
 			catch (System.IO.IOException ex)
 			{
-				System.Console.WriteLine (ex.Message);
+				Program.Display (ex);
+			}
+			catch (System.UnauthorizedAccessException ex)
+			{
+				Program.Display (ex);
 			}
 		}
 
+		private static void Display(System.Exception ex)
+		{
+			var color = System.Console.ForegroundColor;
+			
+			System.Console.ForegroundColor = System.ConsoleColor.Red;
+			System.Console.Error.WriteLine (ex.Message);
+			System.Console.ForegroundColor = color;
+		}
 
 		private static string ShortenDir(string path)
 		{
