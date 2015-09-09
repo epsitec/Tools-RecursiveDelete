@@ -13,7 +13,18 @@ namespace RecursiveDelete
 		{
 			if (args.Length != 1)
 			{
-				System.Console.Error.WriteLine ("Specify one single path and it will be deleted recursively...");
+				var programName = System.IO.Path.GetFileName (System.Environment.GetCommandLineArgs ()[0]);
+
+				System.Console.Error.WriteLine ("Specify the path of a directory and it will be deleted recursively.");
+				System.Console.Error.WriteLine ("You can also drop a folder on the program to delete it.");
+				System.Console.Error.WriteLine ();
+				System.Console.Error.WriteLine ("Usage:");
+				System.Console.Error.WriteLine ("  {0} \"path to folder\"", programName);
+				System.Console.Error.WriteLine ();
+				System.Console.Error.WriteLine ("No confirmation will be asked. The folder, all its files and subfolders");
+				System.Console.Error.WriteLine ("will be deleted, not moved to the trash. The operation is irreversible.");
+				
+				System.Console.ReadLine ();
 				System.Environment.Exit (1);
 			}
 
